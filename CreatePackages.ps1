@@ -88,8 +88,9 @@ Create-Directory build
 try {
 	pushd build
 
-	$packageDirectories | select -first 5 | create-package
-#	$packageDirectories | create-package
+# for testing purposed - limits the number of packages created
+#	$packageDirectories | select -first 5 | create-package
+	$packageDirectories | create-package
 	
 	popd
 }
