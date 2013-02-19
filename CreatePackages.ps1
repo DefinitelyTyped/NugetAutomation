@@ -59,7 +59,7 @@ function Create-Package() {
 			$packageFolder = "$packageId.$newVersion"
 			
 			# Create the directory structure
-			$deployDir = "$packageFolder\Content\Scripts\d.ts\$packageName"
+			$deployDir = "$packageFolder\Content\Scripts\typings\$packageName"
 			Create-Directory $deployDir
 			$tsFiles | %{ cp $_ $deployDir}
 			
