@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id></id>
+    <version></version>
+    <authors>Jason</authors>
+    <owners>Jason</owners>
+    <licenseUrl>https://github.com/staxmanade/DefinetlyTyped.NugetAutomation/blob/master/README.md</licenseUrl>
+    <projectUrl>https://github.com/staxmanade/DefinetlyTyped.NugetAutomation</projectUrl>
+    <iconUrl>https://raw.github.com/staxmanade/DefinetlyTyped.NugetAutomation/master/TypeScriptLogo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description></description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2013</copyright>
+    <tags></tags>
+    <dependencies></dependencies>
+  </metadata>
+</package>
