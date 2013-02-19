@@ -23,13 +23,6 @@ function Create-Directory($name){
 	}
 }
 
-function Get-PackageSha256($filePath) {
-    $file = [System.IO.File]::Open($filePath, "open", "read")
-    $hashBytes = [System.Security.Cryptography.SHA512Managed]::Create().ComputeHash($file)
-    [System.Convert]::ToBase64String($hashBytes);
-    $file.Dispose()
-}
-
 
 function Increment-Version($version){
 
@@ -88,17 +81,6 @@ function Create-Package() {
 			$nuspec.Save((get-item $currSpecFile))
 
 			& $nuget pack $currSpecFile
-
-            # make sure the hash algo hasn't changed on us.
-            if($mostRecentNuspec.properties.PackageHashAlgorithm -ne $null -and $mostRecentNuspec.properties.PackageHashAlgorithm -ne "SHA512") {
-                throw "package with id $packageId contains a PackageHashAlgorithm[$($mostRecentNuspec.properties.PackageHashAlgorithm)] that is not SHA512"
-            }
-
-            $packageCreated = get-item "$packageFolder.nupkg"
-            $newPackageSha = Get-PackageSha256 $packageCreated
-            if($newPackageSha -ne $mostRecentNuspec.properties.PackageHash) {
-                # TODO: the packages are different - look to uploade a new one...
-            }
 		}
     }
     END {
