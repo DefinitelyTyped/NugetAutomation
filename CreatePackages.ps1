@@ -5,11 +5,15 @@ $nuget = (get-item ".\tools\NuGet.CommandLine.2.2.1\tools\NuGet.exe")
 $packageIdFormat = "{0}.TypeScript.DefinetlyTyped"
 $nuspecTemplate = get-item ".\PackageTemplate.nuspec"
 
-function Get-Last-NuGet-Version($nuGetPackageId) {
-    $feeedUrl = "http://packages.nuget.org/v1/FeedService.svc/Packages()?`$filter=Id%20eq%20'$nuGetPackageId'"
+function Get-MostRecentNugetSpec($nugetPackageId) {
+    $feeedUrl= "http://packages.nuget.org/v1/FeedService.svc/Packages()?`$filter=Id%20eq%20'$nugetPackageId'&`$orderby=Version%20desc&`$top=1"
     $webClient = new-object System.Net.WebClient
-    $queryResults = [xml]($webClient.DownloadString($feeedUrl))
-    $queryResults.feed.entry | %{ $_.properties.version } | sort-object | select -last 1
+    $feedResults = [xml]($webClient.DownloadString($feeedUrl))
+    return $feedResults.feed.entry
+}
+
+function Get-Last-NuGet-Version($spec) {
+    $spec.properties.version
 }
 
 function Create-Directory($name){
@@ -18,6 +22,14 @@ function Create-Directory($name){
 		write-host "Created Dir: $name"
 	}
 }
+
+function Get-PackageSha256($filePath) {
+    $file = [System.IO.File]::Open($filePath, "open", "read")
+    $hashBytes = [System.Security.Cryptography.SHA512Managed]::Create().ComputeHash($file)
+    [System.Convert]::ToBase64String($hashBytes);
+    $file.Dispose()
+}
+
 
 function Increment-Version($version){
 
@@ -53,8 +65,10 @@ function Create-Package() {
 		$tsFiles = ls $dir -recurse -include *.d.ts
 
 		if( $tsFiles ) {
-		
-			$currentVersion = (Get-Last-NuGet-Version $packageId)
+
+            $mostRecentNuspec = (Get-MostRecentNugetSpec $packageId)
+
+			$currentVersion = $mostRecentNuspec.properties.version
 			$newVersion = Increment-Version $currentVersion
 			$packageFolder = "$packageId.$newVersion"
 			
@@ -74,11 +88,27 @@ function Create-Package() {
 			$nuspec.Save((get-item $currSpecFile))
 
 			& $nuget pack $currSpecFile
+
+            # make sure the hash algo hasn't changed on us.
+            if($mostRecentNuspec.properties.PackageHashAlgorithm -ne $null -and $mostRecentNuspec.properties.PackageHashAlgorithm -ne "SHA512") {
+                throw "package with id $packageId contains a PackageHashAlgorithm[$($mostRecentNuspec.properties.PackageHashAlgorithm)] that is not SHA512"
+            }
+
+            $packageCreated = get-item "$packageFolder.nupkg"
+            $newPackageSha = Get-PackageSha256 $packageCreated
+            if($newPackageSha -ne $mostRecentNuspec.properties.PackageHash) {
+                # TODO: the packages are different - look to uploade a new one...
+            }
 		}
     }
     END {
 	}
 }
+
+# make sure the submodule is here and up to date.
+git submodule init
+git submodule update
+git submodule foreach git pull origin master
 
 $packageDirectories = ls .\Definitions\* -Directory
 
