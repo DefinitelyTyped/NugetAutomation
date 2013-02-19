@@ -1,0 +1,3 @@
+[submodule "Definitions"]
+	path = Definitions
+	url = https://github.com/borisyankov/DefinitelyTyped.git
