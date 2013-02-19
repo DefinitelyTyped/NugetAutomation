@@ -3,9 +3,9 @@
   <metadata>
     <id></id>
     <version></version>
-    <authors>Jason</authors>
-    <owners>Jason</owners>
-    <licenseUrl>https://github.com/staxmanade/DefinetlyTyped.NugetAutomation/blob/master/README.md</licenseUrl>
+    <authors>Jason Jarrett</authors>
+    <owners>Jason Jarrett</owners>
+    <licenseUrl>https://github.com/staxmanade/DefinetlyTyped.NugetAutomation/blob/master/LICENSE.MIT</licenseUrl>
     <projectUrl>https://github.com/staxmanade/DefinetlyTyped.NugetAutomation</projectUrl>
     <iconUrl>https://raw.github.com/staxmanade/DefinetlyTyped.NugetAutomation/master/TypeScriptLogo.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
