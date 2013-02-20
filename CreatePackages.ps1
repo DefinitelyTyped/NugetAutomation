@@ -97,18 +97,24 @@ git submodule foreach git pull origin master
 
 # Find updated repositories
 
-$lastPublishedCommitReference = cat LAST_PUBLISHED_COMMIT
+if(test-path LAST_PUBLISHED_COMMIT) {
+    $lastPublishedCommitReference = cat LAST_PUBLISHED_COMMIT
+} else {
+    $lastPublishedCommitReference = $null
+}
+
 pushd Definitions
 
 git pull origin master
 
-
-# Figure out what project (folders) have changed since our last publish
-$projectsToUpdate = git diff --name-status $lastPublishedCommitReference origin/master | `
-    Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
-    %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
-    where { ![string]::IsNullOrEmpty($_) } | ` 
-    select -Unique
+if($lastPublishedCommitReference) {
+    # Figure out what project (folders) have changed since our last publish
+    $projectsToUpdate = git diff --name-status $lastPublishedCommitReference origin/master | `
+        Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
+        %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
+        where { ![string]::IsNullOrEmpty($_) } | ` 
+        select -Unique
+}
 
 $newLastCommitPublished = (git rev-parse HEAD);
 
@@ -137,9 +143,11 @@ try {
     $packageDirectories | create-package $packagesUpdated
 
     $newLastCommitPublished > LAST_PUBLISHED_COMMIT
-    git add LAST_PUBLISHED_COMMIT
-    git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
-    git push origin master
+
+# No balls yet...
+#    git add LAST_PUBLISHED_COMMIT
+#    git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
+#    git push origin master
 	popd
 }
 catch {
