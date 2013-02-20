@@ -1,3 +1,8 @@
+param(
+    $nugetApiKey,
+    [switch]$CommitLocalGit,
+    [switch]$PublishNuget
+    )
 
 # https://github.com/borisyankov/DefinitelyTyped.git
 
@@ -46,6 +51,30 @@ function Increment-Version($version){
     [System.String]::Join(".", $parts)
 }
 
+function Configure-NuSpec($spec, $packageId, $newVersion, $pakageName, $dependentPackages) {
+
+    $metadata = $spec.package.metadata
+
+    $metadata.id = $packageId
+    $metadata.version = $newVersion
+    $metadata.tags = "TypeScript JavaScript $pakageName"
+
+    #TODO: we should describe the git-commit's used to create this package?
+    $metadata.description = "TypeScript Definitions (d.ts) for {0} generated from the DefinitelyTyped github repository" -f $packageName
+
+    if($dependentPackages) {
+
+        #TODO: there may be a more concise way to work with this xml than doing string manipulation.
+        $dependenciesXml = ""
+
+        foreach($dependentPackage in $dependentPackages) {
+            $dependenciesXml = $dependenciesXml + "<dependency id=`"$dependentPackage`" />"
+        }
+
+        $metadata["dependencies"].InnerXml = $dependenciesXml
+    }
+}
+
 
 function Create-Package($packagesAdded) {
     BEGIN {
@@ -76,13 +105,17 @@ function Create-Package($packagesAdded) {
 			$currSpecFile = "$packageFolder\$packageId.nuspec"
 			cp $nuspecTemplate $currSpecFile
 			$nuspec = [xml](cat $currSpecFile)
-			$nuspec.package.metadata.id = $packageId
-			$nuspec.package.metadata.version = $newVersion
-			$nuspec.package.metadata.tags = "TypeScript JavaScript $pakageName"
-			$nuspec.package.metadata.description = "TypeScript Definitions (d.ts) for {0} generated from the DefinitelyTyped github repository" -f $packageName
+            Configure-NuSpec $nuspec $packageId $newVersion $pakageName
 			$nuspec.Save((get-item $currSpecFile))
 
 			& $nuget pack $currSpecFile
+
+            if($nugetApiKey) {
+                & $nuget push "$packageFolder.nupkg" -ApiKey $nugetApiKey -NonInteractive
+            } else {
+                "***** - NO API KEY - not publishing to Nuget - *****"
+            }
+
             $packagesAdded.add($packageId);
 		}
     }
@@ -146,10 +179,16 @@ try {
 
     $newLastCommitPublished > LAST_PUBLISHED_COMMIT
 
-# No balls yet...
-#    git add LAST_PUBLISHED_COMMIT
-#    git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
-#    git push origin master
+
+    if($CommitLocalGit) {
+        git add LAST_PUBLISHED_COMMIT
+        git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
+    }
+
+    if($PushGit) {
+        git push origin master
+    }
+
 }
 catch {
 	popd
