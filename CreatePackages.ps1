@@ -2,7 +2,7 @@
 # https://github.com/borisyankov/DefinitelyTyped.git
 
 $nuget = (get-item ".\tools\NuGet.CommandLine.2.2.1\tools\NuGet.exe")
-$packageIdFormat = "{0}.TypeScript.DefinetlyTyped"
+$packageIdFormat = "{0}.TypeScript.DefinitelyTyped"
 $nuspecTemplate = get-item ".\PackageTemplate.nuspec"
 
 function Get-MostRecentNugetSpec($nugetPackageId) {
@@ -47,7 +47,7 @@ function Increment-Version($version){
 }
 
 
-function Create-Package() {
+function Create-Package($packagesAdded) {
     BEGIN {
     }
     PROCESS {
@@ -57,7 +57,9 @@ function Create-Package() {
 
 		$tsFiles = ls $dir -recurse -include *.d.ts
 
-		if( $tsFiles ) {
+		if(!($tsFiles)) {
+            return;
+        } else {
 
             $mostRecentNuspec = (Get-MostRecentNugetSpec $packageId)
 
@@ -77,10 +79,11 @@ function Create-Package() {
 			$nuspec.package.metadata.id = $packageId
 			$nuspec.package.metadata.version = $newVersion
 			$nuspec.package.metadata.tags = "TypeScript JavaScript $pakageName"
-			$nuspec.package.metadata.description = "TypeScript Definitions (d.ts) for {0} generated from the DefinetlyTyped github repository" -f $packageName
+			$nuspec.package.metadata.description = "TypeScript Definitions (d.ts) for {0} generated from the DefinitelyTyped github repository" -f $packageName
 			$nuspec.Save((get-item $currSpecFile))
 
 			& $nuget pack $currSpecFile
+            $packagesAdded.add($packageId);
 		}
     }
     END {
@@ -92,7 +95,27 @@ git submodule init
 git submodule update
 git submodule foreach git pull origin master
 
-$packageDirectories = ls .\Definitions\* -Directory
+# Find updated repositories
+
+$lastPublishedCommitReference = cat LAST_PUBLISHED_COMMIT
+pushd Definitions
+
+git pull origin master
+
+
+# Figure out what project (folders) have changed since our last publish
+$projectsToUpdate = git diff --name-status $lastPublishedCommitReference origin/master | `
+    Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
+    %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
+    where { ![string]::IsNullOrEmpty($_) } | ` 
+    select -Unique
+
+$newLastCommitPublished = (git rev-parse HEAD);
+
+popd
+
+
+$allPackageDirectories = ls .\Definitions\* -Directory
 
 rm build -recurse -force -ErrorAction SilentlyContinue
 Create-Directory build
@@ -100,10 +123,23 @@ Create-Directory build
 try {
 	pushd build
 
-# for testing purposed - limits the number of packages created
-#	$packageDirectories | select -first 5 | create-package
-	$packageDirectories | create-package
-	
+    $packagesUpdated = New-Object Collections.Generic.List[string]
+
+    # Filter out already published packages if we already have a LAST_PUBLISHED_COMMIT
+    if($lastPublishedCommitReference -ne $null) {
+        $packageDirectories = $allPackageDirectories | where { ($lastPublishedCommitReference -ne $null) -and $projectsToUpdate -contains $_.Name }
+    }
+    else {
+        # first-time run. let's run all the packages.
+        $packageDirectories = $allPackageDirectories
+    }
+
+    $packageDirectories | create-package $packagesUpdated
+
+    $newLastCommitPublished > LAST_PUBLISHED_COMMIT
+    git add LAST_PUBLISHED_COMMIT
+    git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
+    git push origin master
 	popd
 }
 catch {
