@@ -142,13 +142,14 @@ try {
 
     $packageDirectories | create-package $packagesUpdated
 
+	popd
+
     $newLastCommitPublished > LAST_PUBLISHED_COMMIT
 
 # No balls yet...
 #    git add LAST_PUBLISHED_COMMIT
 #    git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
 #    git push origin master
-	popd
 }
 catch {
 	popd
