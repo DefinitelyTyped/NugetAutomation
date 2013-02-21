@@ -1,7 +1,8 @@
 param(
     $nugetApiKey,
     [switch]$CommitLocalGit,
-    [switch]$PublishNuget
+    [switch]$PublishNuget,
+    $specificPackages
     )
 
 # https://github.com/borisyankov/DefinitelyTyped.git
@@ -67,12 +68,44 @@ function Configure-NuSpec($spec, $packageId, $newVersion, $pakageName, $dependen
         #TODO: there may be a more concise way to work with this xml than doing string manipulation.
         $dependenciesXml = ""
 
-        foreach($dependentPackage in $dependentPackages) {
-            $dependenciesXml = $dependenciesXml + "<dependency id=`"$dependentPackage`" />"
+        foreach($key in $dependentPackages.Keys) {
+            $dependentPackageName = $packageIdFormat -f $key
+            $dependenciesXml = $dependenciesXml + "<dependency id=`"$dependentPackageName`" />"
         }
 
         $metadata["dependencies"].InnerXml = $dependenciesXml
     }
+}
+
+function Resolve-Dependencies($packageFolder, $dependentPackages) {
+
+    $packageFolder = get-item $packageFolder
+
+    
+
+    function Resolve-SubDependencies($dependencyName){
+        if($dependentPackages.ContainsKey($dependencyName)){ 
+            return
+        }
+
+        $dependentPackages.Add($dependencyName, $dependencyName);
+
+        $dependentFolder = get-item "$($packageFolder.Parent.FullName)\$dependencyName"
+        if(!(test-path $dependentFolder)){
+            throw "no dependency [$dependencyName] found in [$dependentFolder]"
+        } else {
+            Resolve-Dependencies $dependentFolder $dependentPackages
+        }
+    }
+
+    (ls $packageFolder -Recurse -Include *.d.ts) | `
+        cat | `
+        where { $_ -match "//.*(reference\spath=('|`")../(?<package>.*)(/|\\)(.*)\.ts('|`"))" } | `
+        %{ $matches.package } | ` # pull the named regex package name out
+        ?{ $_ } | ` # filter out any blank lines
+        ?{ $_ -ne $packageFolder } | `
+        %{ Resolve-SubDependencies $_ }
+
 }
 
 
@@ -81,6 +114,7 @@ function Create-Package($packagesAdded) {
     }
     PROCESS {
 		$dir = $_
+
 		$packageName = $dir.Name
 		$packageId = $packageIdFormat -f $packageName
 
@@ -100,20 +134,28 @@ function Create-Package($packagesAdded) {
 			$deployDir = "$packageFolder\Content\Scripts\typings\$packageName"
 			Create-Directory $deployDir
 			$tsFiles | %{ cp $_ $deployDir}
+
+
+            $dependentPackages = @{}
+            Resolve-Dependencies $dir $dependentPackages
 			
 			# setup the nuspec file
 			$currSpecFile = "$packageFolder\$packageId.nuspec"
 			cp $nuspecTemplate $currSpecFile
 			$nuspec = [xml](cat $currSpecFile)
-            Configure-NuSpec $nuspec $packageId $newVersion $pakageName
+            Configure-NuSpec $nuspec $packageId $newVersion $pakageName $dependentPackages
 			$nuspec.Save((get-item $currSpecFile))
 
 			& $nuget pack $currSpecFile
 
-            if($nugetApiKey) {
-                & $nuget push "$packageFolder.nupkg" -ApiKey $nugetApiKey -NonInteractive
+            if($PublishNuget) {
+                if($nugetApiKey) {
+                    & $nuget push "$packageFolder.nupkg" -ApiKey $nugetApiKey -NonInteractive
+                } else {
+                    & $nuget push "$packageFolder.nupkg" -NonInteractive
+                }
             } else {
-                "***** - NO API KEY - not publishing to Nuget - *****"
+                "***** - NOT publishing to Nuget - *****"
             }
 
             $packagesAdded.add($packageId);
@@ -123,10 +165,18 @@ function Create-Package($packagesAdded) {
 	}
 }
 
-# make sure the submodule is here and up to date.
-git submodule init
-git submodule update
-git submodule foreach git pull origin master
+function Update-Submodules {
+
+    # make sure the submodule is here and up to date.
+    git submodule init
+    git submodule update
+    git submodule foreach git pull origin master
+
+}
+
+
+
+Update-Submodules
 
 # Find updated repositories
 
@@ -138,35 +188,40 @@ if(test-path LAST_PUBLISHED_COMMIT) {
 
 pushd Definitions
 
-git pull origin master
+    git pull origin master
 
-if($lastPublishedCommitReference) {
-    # Figure out what project (folders) have changed since our last publish
-    $projectsToUpdate = git diff --name-status $lastPublishedCommitReference origin/master | `
-        Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
-        %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
-        where { ![string]::IsNullOrEmpty($_) } | ` 
-        select -Unique
-}
+    if($lastPublishedCommitReference) {
+        # Figure out what project (folders) have changed since our last publish
+        $projectsToUpdate = git diff --name-status $lastPublishedCommitReference origin/master | `
+            Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
+            %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
+            where { ![string]::IsNullOrEmpty($_) } | ` 
+            select -Unique
+    }
 
-$newLastCommitPublished = (git rev-parse HEAD);
+    $newLastCommitPublished = (git rev-parse HEAD);
 
 popd
 
+if($specificPackages) {
+    $allPackageDirectories = ls .\Definitions\* -Directory | ?{ $specificPackages -contains $_.Name }
+}
+else {
+    $allPackageDirectories = ls .\Definitions\* -Directory
+}
 
-$allPackageDirectories = ls .\Definitions\* -Directory
 
 rm build -recurse -force -ErrorAction SilentlyContinue
 Create-Directory build
 
-try {
-	pushd build
+
+pushd build
 
     $packagesUpdated = New-Object Collections.Generic.List[string]
 
     # Filter out already published packages if we already have a LAST_PUBLISHED_COMMIT
     if($lastPublishedCommitReference -ne $null) {
-        $packageDirectories = $allPackageDirectories | where { ($lastPublishedCommitReference -ne $null) -and $projectsToUpdate -contains $_.Name }
+        $packageDirectories = $allPackageDirectories | where { $projectsToUpdate -contains $_.Name }
     }
     else {
         # first-time run. let's run all the packages.
@@ -175,22 +230,16 @@ try {
 
     $packageDirectories | create-package $packagesUpdated
 
-	popd
+popd
 
-    $newLastCommitPublished > LAST_PUBLISHED_COMMIT
+$newLastCommitPublished > LAST_PUBLISHED_COMMIT
 
 
-    if($CommitLocalGit) {
-        git add LAST_PUBLISHED_COMMIT
-        git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
-    }
-
-    if($PushGit) {
-        git push origin master
-    }
-
+if($CommitLocalGit) {
+    git add LAST_PUBLISHED_COMMIT
+    git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
 }
-catch {
-	popd
-	write-error $_
+
+if($PushGit) {
+    git push origin master
 }
