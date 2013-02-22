@@ -52,16 +52,14 @@ function Increment-Version($version){
     [System.String]::Join(".", $parts)
 }
 
-function Configure-NuSpec($spec, $packageId, $newVersion, $pakageName, $dependentPackages) {
+function Configure-NuSpec($spec, $packageId, $newVersion, $pakageName, $dependentPackages, $newCommitHash) {
 
     $metadata = $spec.package.metadata
 
     $metadata.id = $packageId
     $metadata.version = $newVersion
     $metadata.tags = "TypeScript JavaScript $pakageName"
-
-    #TODO: we should describe the git-commit's used to create this package?
-    $metadata.description = "TypeScript Definitions (d.ts) for {0} generated from the DefinitelyTyped github repository" -f $packageName
+    $metadata.description = "TypeScript Definitions (d.ts) for {0}. Generated based off the DefinitelyTyped repository [git commit: {1}]. http://github.com/DefinitelyTyped" -f $packageName, $newCommitHash
 
     if($dependentPackages) {
 
@@ -109,7 +107,7 @@ function Resolve-Dependencies($packageFolder, $dependentPackages) {
 }
 
 
-function Create-Package($packagesAdded) {
+function Create-Package($packagesAdded, $newCommitHash) {
     BEGIN {
     }
     PROCESS {
@@ -143,7 +141,7 @@ function Create-Package($packagesAdded) {
 			$currSpecFile = "$packageFolder\$packageId.nuspec"
 			cp $nuspecTemplate $currSpecFile
 			$nuspec = [xml](cat $currSpecFile)
-            Configure-NuSpec $nuspec $packageId $newVersion $pakageName $dependentPackages
+            Configure-NuSpec $nuspec $packageId $newVersion $pakageName $dependentPackages $newCommitHash
 			$nuspec.Save((get-item $currSpecFile))
 
 			& $nuget pack $currSpecFile
@@ -205,7 +203,7 @@ function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishe
 
 $lastPublishedCommitReference = Get-MostRecentSavedCommit
 
-$newLastCommitPublished = Get-NewestCommitFromDefinetlyTyped ".\Definitions" $lastPublishedCommitReference
+$newCommitHash = Get-NewestCommitFromDefinetlyTyped ".\Definitions" $lastPublishedCommitReference
 
 # Find updated repositories
 
@@ -234,11 +232,11 @@ pushd build
         $packageDirectories = $allPackageDirectories
     }
 
-    $packageDirectories | create-package $packagesUpdated
+    $packageDirectories | create-package $packagesUpdated $newCommitHash
 
 popd
 
-$newLastCommitPublished > LAST_PUBLISHED_COMMIT
+$newCommitHash > LAST_PUBLISHED_COMMIT
 
 
 if($CommitLocalGit) {
