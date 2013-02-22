@@ -1,6 +1,7 @@
 param(
     $nugetApiKey,
     [switch]$CommitLocalGit,
+    [switch]$PushGit,
     [switch]$PublishNuget,
     $specificPackages
     )
@@ -238,12 +239,17 @@ popd
 
 $newCommitHash > LAST_PUBLISHED_COMMIT
 
+# only commit update if there were no errors.
+if($Error.Count -eq 0) {
 
-if($CommitLocalGit) {
-    git add LAST_PUBLISHED_COMMIT
-    git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
-}
+    if($CommitLocalGit) {
+        git add Definitions
+        git add LAST_PUBLISHED_COMMIT
+        git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
+    }
 
-if($PushGit) {
-    git push origin master
+    if($PushGit) {
+        git push origin master
+    }
+
 }
