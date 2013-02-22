@@ -174,34 +174,41 @@ function Update-Submodules {
 
 }
 
-
-
-Update-Submodules
-
-# Find updated repositories
-
-if(test-path LAST_PUBLISHED_COMMIT) {
-    $lastPublishedCommitReference = cat LAST_PUBLISHED_COMMIT
-} else {
-    $lastPublishedCommitReference = $null
+function Get-MostRecentSavedCommit {
+    return cat LAST_PUBLISHED_COMMIT -ErrorAction SilentlyContinue
 }
 
-pushd Definitions
+function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishedCommitReference) {
+
+    Update-Submodules
+
+    pushd $definetlyTypedFolder
 
     git pull origin master
 
-    if($lastPublishedCommitReference) {
-        # Figure out what project (folders) have changed since our last publish
-        $projectsToUpdate = git diff --name-status $lastPublishedCommitReference origin/master | `
-            Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
-            %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
-            where { ![string]::IsNullOrEmpty($_) } | ` 
-            select -Unique
-    }
+        if($lastPublishedCommitReference) {
+            # Figure out what project (folders) have changed since our last publish
+            $projectsToUpdate = git diff --name-status $lastPublishedCommitReference origin/master | `
+                Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
+                %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
+                where { ![string]::IsNullOrEmpty($_) } | ` 
+                select -Unique
+        }
 
-    $newLastCommitPublished = (git rev-parse HEAD);
+        $newLastCommitPublished = (git rev-parse HEAD);
 
-popd
+    popd
+
+    return $newLastCommitPublished;
+}
+
+
+$lastPublishedCommitReference = Get-MostRecentSavedCommit
+
+$newLastCommitPublished = Get-NewestCommitFromDefinetlyTyped ".\Definitions" $lastPublishedCommitReference
+
+# Find updated repositories
+
 
 if($specificPackages) {
     $allPackageDirectories = ls .\Definitions\* -Directory | ?{ $specificPackages -contains $_.Name }
@@ -210,10 +217,9 @@ else {
     $allPackageDirectories = ls .\Definitions\* -Directory
 }
 
-
+# Clean the build directory
 rm build -recurse -force -ErrorAction SilentlyContinue
 Create-Directory build
-
 
 pushd build
 
