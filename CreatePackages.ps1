@@ -174,7 +174,12 @@ function Update-Submodules {
 }
 
 function Get-MostRecentSavedCommit {
-    return cat LAST_PUBLISHED_COMMIT -ErrorAction SilentlyContinue
+    $file = cat LAST_PUBLISHED_COMMIT -ErrorAction SilentlyContinue
+
+    # first-time run and the file won't exist - clear any errors for now
+    $Error.Clear()
+
+    return $file;
 }
 
 function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishedCommitReference) {
@@ -251,5 +256,9 @@ if($Error.Count -eq 0) {
     if($PushGit) {
         git push origin master
     }
-
+}
+else {
+    "*****"
+    "ERROR During Process:"
+    $Error
 }
