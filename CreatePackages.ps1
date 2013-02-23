@@ -167,9 +167,12 @@ function Create-Package($packagesAdded, $newCommitHash) {
 function Update-Submodules {
 
     # make sure the submodule is here and up to date.
-    git submodule init
-    git submodule update
-    git submodule foreach git pull origin master
+    git submodule update --init
+    pushd Definitions
+    git checkout master
+    git pull origin master
+#    git submodule foreach git pull origin master
+    popd
 
 }
 
@@ -182,21 +185,22 @@ function Get-MostRecentSavedCommit {
     return $file;
 }
 
-function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishedCommitReference) {
+function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishedCommitReference, $projectsToUpdate) {
 
-    Update-Submodules
+    Update-Submodules | Out-Null
 
     pushd $definetlyTypedFolder
 
-    git pull origin master
+    git pull origin master | Out-Null
 
         if($lastPublishedCommitReference) {
             # Figure out what project (folders) have changed since our last publish
-            $projectsToUpdate = git diff --name-status $lastPublishedCommitReference origin/master | `
+            git diff --name-status $lastPublishedCommitReference origin/master | `
                 Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
                 %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
                 where { ![string]::IsNullOrEmpty($_) } | ` 
-                select -Unique
+                select -Unique | `
+                %{ $projectsToUpdate.add($_) }
         }
 
         $newLastCommitPublished = (git rev-parse HEAD);
@@ -209,7 +213,9 @@ function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishe
 
 $lastPublishedCommitReference = Get-MostRecentSavedCommit
 
-$newCommitHash = Get-NewestCommitFromDefinetlyTyped ".\Definitions" $lastPublishedCommitReference
+$projectsToUpdate = New-Object Collections.Generic.List[string]
+
+$newCommitHash = Get-NewestCommitFromDefinetlyTyped ".\Definitions" $lastPublishedCommitReference $projectsToUpdate
 
 # Find updated repositories
 
@@ -242,15 +248,21 @@ pushd build
 
 popd
 
-$newCommitHash > LAST_PUBLISHED_COMMIT
+$newCommitHash | out-file LAST_PUBLISHED_COMMIT -Encoding ascii
 
 # only commit update if there were no errors.
 if($Error.Count -eq 0) {
 
+    $commitMessage =  "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
+
+    "****"
+    $commitMessage
+    "****"
+
     if($CommitLocalGit) {
         git add Definitions
         git add LAST_PUBLISHED_COMMIT
-        git commit -m "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
+        git commit -m $commitMessage
     }
 
     if($PushGit) {
