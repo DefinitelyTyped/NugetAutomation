@@ -167,12 +167,7 @@ function Create-Package($packagesAdded, $newCommitHash) {
 function Update-Submodules {
 
     # make sure the submodule is here and up to date.
-    git submodule update --init
-    pushd Definitions
-    git checkout master
-    git pull origin master
-#    git submodule foreach git pull origin master
-    popd
+    git submodule foreach git pull origin master
 
 }
 
@@ -195,12 +190,13 @@ function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishe
 
         if($lastPublishedCommitReference) {
             # Figure out what project (folders) have changed since our last publish
-            git diff --name-status $lastPublishedCommitReference origin/master | `
+            git diff --name-status ($lastPublishedCommitReference).Trim() origin/master | `
                 Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
                 %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
                 where { ![string]::IsNullOrEmpty($_) } | ` 
                 select -Unique | `
-                %{ $projectsToUpdate.add($_) }
+                where { !([string]$_).StartsWith("_") } | ` #Ignore infrastructure (starting with an underscore)
+                %{ $projectsToUpdate.add($_); Write-host "found project to update: $_"; }
         }
 
         $newLastCommitPublished = (git rev-parse HEAD);
@@ -215,9 +211,20 @@ $lastPublishedCommitReference = Get-MostRecentSavedCommit
 
 $projectsToUpdate = New-Object Collections.Generic.List[string]
 
+# Find updated repositories
 $newCommitHash = Get-NewestCommitFromDefinetlyTyped ".\Definitions" $lastPublishedCommitReference $projectsToUpdate
 
-# Find updated repositories
+if(($newCommitHash | measure).count -ne 1) {
+    "*****"
+    $newCommitHash
+    "*****"
+    throw "commit hash not correct"
+}
+
+"*** Projects to update ***"
+$projectsToUpdate
+"**************************"
+
 
 
 if($specificPackages) {
