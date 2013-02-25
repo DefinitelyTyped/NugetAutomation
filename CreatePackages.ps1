@@ -257,8 +257,10 @@ popd
 
 $newCommitHash | out-file LAST_PUBLISHED_COMMIT -Encoding ascii
 
-# only commit update if there were no errors.
-if($Error.Count -eq 0) {
+if($newCommitHash -eq $lastPublishedCommitReference) {
+    "No new changes detected"
+}
+elseif($Error.Count -eq 0) {
 
     $commitMessage =  "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
 
