@@ -2,3 +2,5 @@
 *.orig
 
 build/
+
+publishIt.ps1
