@@ -167,8 +167,9 @@ function Create-Package($packagesAdded, $newCommitHash) {
 function Update-Submodules {
 
     # make sure the submodule is here and up to date.
-    git submodule foreach git pull origin master
-
+    pushd .\Definitions
+    git pull origin master
+    popd
 }
 
 function Get-MostRecentSavedCommit {
@@ -182,7 +183,7 @@ function Get-MostRecentSavedCommit {
 
 function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishedCommitReference, $projectsToUpdate) {
 
-    Update-Submodules | Out-Null
+    Write-Host (Update-Submodules)
 
     pushd $definetlyTypedFolder
 
