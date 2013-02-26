@@ -191,7 +191,7 @@ function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishe
 
         if($lastPublishedCommitReference) {
             # Figure out what project (folders) have changed since our last publish
-            git diff --name-status ($lastPublishedCommitReference).Trim() origin/master | `
+            git diff --name-status ($lastPublishedCommitReference).Trim() master | `
                 Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
                 %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
                 where { ![string]::IsNullOrEmpty($_) } | ` 
