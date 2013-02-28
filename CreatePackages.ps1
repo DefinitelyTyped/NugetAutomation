@@ -263,7 +263,12 @@ if($newCommitHash -eq $lastPublishedCommitReference) {
 }
 elseif($Error.Count -eq 0) {
 
-    $commitMessage =  "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
+    if($packagesUpdated.Count -gt 0)
+    {
+        $commitMessage =  "Published NuGet Packages`n`n  - $([string]::join([System.Environment]::NewLine + "  - ", $packagesUpdated))"
+    } else {
+        $commitMessage =  "No packages updated but something in the DefinitelyTyped submodule changed - upping the submodule commit"
+    }
 
     "****"
     $commitMessage
