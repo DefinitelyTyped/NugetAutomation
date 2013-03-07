@@ -26,3 +26,15 @@ The following is how we run the script for a full on [double rainbow](http://www
 
 
 And there should be a folder `./build` where any nuget packages generated will reside.
+
+
+How to re-publish ALL packages?
+===============================
+
+The happy path should be this doesn't need to happen. An example that may cause this to not be so happy is if links in the project change and the nuspec template has to be updated for all pacages.
+
+To re-publish all packages:
+
+- First delete the `LAST_PUBLISHED_COMMIT` file
+- Then run the CreatePackages (as described above) with the necessary arguments.
+
