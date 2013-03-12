@@ -10,7 +10,7 @@ It's not really intended to be used by anyone, however if you'd like to see how 
 Usages
 ======
 
-This is how the script can be used to generate a dry-run. Generating nuget packages, but not applying any side-effects (publishing to nuget, commiting to the git repo, pushing the code up to github).
+This is how the script can be used to generate a dry-run. Generating nuget packages, but not applying any side-effects (publishing to nuget, committing to the git repo, pushing the code up to github).
 
     .\CreatePackages.ps1
 
@@ -31,7 +31,7 @@ And there should be a folder `./build` where any nuget packages generated will r
 How to re-publish ALL packages?
 ===============================
 
-The happy path should be this doesn't need to happen. An example that may cause this to not be so happy is if links in the project change and the nuspec template has to be updated for all pacages.
+The happy path should be this doesn't need to happen. An example that may cause this to not be so happy is if links in the project change and the nuspec template has to be updated for all packages.
 
 To re-publish all packages:
 
