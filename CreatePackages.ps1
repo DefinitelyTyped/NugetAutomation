@@ -125,7 +125,7 @@ function Create-Package($packagesAdded, $newCommitHash) {
 
             $mostRecentNuspec = (Get-MostRecentNugetSpec $packageId)
 
-			$currentVersion = $mostRecentNuspec.properties.version
+			$currentVersion = $mostRecentNuspec.properties.version."#text"
 			$newVersion = Increment-Version $currentVersion
 			$packageFolder = "$packageId.$newVersion"
 			
