@@ -20,7 +20,11 @@ function Get-MostRecentNugetSpec($nugetPackageId) {
 }
 
 function Get-Last-NuGet-Version($spec) {
-    $spec.properties.version
+    $v = $spec.properties.version."#text"
+    if(!$v) {
+        $v = $spec.properties.version
+    }
+    $v
 }
 
 function Create-Directory($name){
@@ -125,7 +129,7 @@ function Create-Package($packagesAdded, $newCommitHash) {
 
             $mostRecentNuspec = (Get-MostRecentNugetSpec $packageId)
 
-			$currentVersion = $mostRecentNuspec.properties.version."#text"
+			$currentVersion = Get-Last-NuGet-Version $mostRecentNuspec
 			$newVersion = Increment-Version $currentVersion
 			$packageFolder = "$packageId.$newVersion"
 			
