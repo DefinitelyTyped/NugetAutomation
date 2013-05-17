@@ -200,7 +200,7 @@ function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishe
                 %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
                 where { ![string]::IsNullOrEmpty($_) } | ` 
                 select -Unique | `
-                where { !([string]$_).StartsWith("_") } | ` #Ignore infrastructure (starting with an underscore)
+                where { !([string]$_).StartsWith("_") } | `
                 %{ $projectsToUpdate.add($_); Write-host "found project to update: $_"; }
         }
 
