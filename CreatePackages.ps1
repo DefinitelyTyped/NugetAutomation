@@ -233,10 +233,10 @@ $projectsToUpdate
 
 
 if($specificPackages) {
-    $allPackageDirectories = ls .\Definitions\* -Directory | ?{ $specificPackages -contains $_.Name }
+    $allPackageDirectories = ls .\Definitions\* | ?{ $_.PSIsContainer } | ?{ $specificPackages -contains $_.Name }
 }
 else {
-    $allPackageDirectories = ls .\Definitions\* -Directory
+    $allPackageDirectories = ls .\Definitions\* | ?{ $_.PSIsContainer }
 }
 
 # Clean the build directory
