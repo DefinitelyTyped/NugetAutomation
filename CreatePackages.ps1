@@ -198,7 +198,7 @@ function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishe
             git diff --name-status ($lastPublishedCommitReference).Trim() master | `
                 Select @{Name="ChangeType";Expression={$_.Substring(0,1)}}, @{Name="File"; Expression={$_.Substring(2)}} | `
                 %{ [System.IO.Path]::GetDirectoryName($_.File) -replace "(.*)\\(.*)", '$1' } | `
-                where { ![string]::IsNullOrEmpty($_) } | ` 
+                where { ![string]::IsNullOrEmpty($_) } | `
                 select -Unique | `
                 where { !([string]$_).StartsWith("_") } | `
                 %{ $projectsToUpdate.add($_); Write-host "found project to update: $_"; }
