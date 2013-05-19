@@ -11,6 +11,8 @@ Thanks to the great support by the CodeBetter community we've fully automated th
 
 [teamcity.codebetter NugetAutomation](http://teamcity.codebetter.com/viewType.html?buildTypeId=bt957)
 
+NOTE: the `tests` are actually each a `package` published to nuget. This allows us to easily see when a package was published vs a blank run of the script.
+
 Usages
 ======
 
