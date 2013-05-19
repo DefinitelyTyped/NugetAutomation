@@ -104,8 +104,8 @@ function Resolve-Dependencies($packageFolder, $dependentPackages) {
     (ls $packageFolder -Recurse -Include *.d.ts) | `
         cat | `
         where { $_ -match "//.*(reference\spath=('|`")../(?<package>.*)(/|\\)(.*)\.ts('|`"))" } | `
-        %{ $matches.package } | ` # pull the named regex package name out
-        ?{ $_ } | ` # filter out any blank lines
+        %{ $matches.package } | `
+        ?{ $_ } | `
         ?{ $_ -ne $packageFolder } | `
         %{ Resolve-SubDependencies $_ }
 
@@ -169,6 +169,8 @@ function Create-Package($packagesAdded, $newCommitHash) {
 }
 
 function Update-Submodules {
+
+    git submodule update --init --recursive
 
     # make sure the submodule is here and up to date.
     pushd .\Definitions
@@ -261,6 +263,7 @@ pushd build
 popd
 
 $newCommitHash | out-file LAST_PUBLISHED_COMMIT -Encoding ascii
+
 
 if($newCommitHash -eq $lastPublishedCommitReference) {
     "No new changes detected"
