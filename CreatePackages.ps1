@@ -250,7 +250,9 @@ else {
 }
 
 # Clean the build directory
-rm build -recurse -force -ErrorAction SilentlyContinue
+if(test-path build) {
+	rm build -recurse -force -ErrorAction SilentlyContinue
+}
 Create-Directory build
 
 pushd build
