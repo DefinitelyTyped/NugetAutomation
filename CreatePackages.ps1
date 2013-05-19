@@ -132,7 +132,6 @@ function Create-Package($packagesAdded, $newCommitHash) {
 		"##teamcity[testStarted name='$packageId']"
 	    }
 
-
             $mostRecentNuspec = (Get-MostRecentNugetSpec $packageId)
 
 			$currentVersion = Get-Last-NuGet-Version $mostRecentNuspec
@@ -266,9 +265,17 @@ pushd build
         # first-time run. let's run all the packages.
         $packageDirectories = $allPackageDirectories
     }
+    
+    if($IsTeamCity) {
+	"##teamcity[testSuiteStarted name='DefinitlyTyped NugetAutomation']"
+    }
+    
 
     $packageDirectories | create-package $packagesUpdated $newCommitHash
 
+    if($IsTeamCity) {
+	"##teamcity[testSuiteFinished name='DefinitlyTyped NugetAutomation']"
+    }
 popd
 
 $newCommitHash | out-file LAST_PUBLISHED_COMMIT -Encoding ascii
