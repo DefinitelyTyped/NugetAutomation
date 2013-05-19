@@ -5,7 +5,11 @@ This project contains the automation used to generate NuGet packages for each of
 
 It's not really intended to be used by anyone, however if you'd like to see how we automate this process, or have feedback on how it is working please open an issue or send a pull request!
 
+TeamCity
+========
+Thanks to the great support by the CodeBetter community we've fully automated this process at the following link.
 
+[teamcity.codebetter NugetAutomation](http://teamcity.codebetter.com/viewType.html?buildTypeId=bt957)
 
 Usages
 ======
