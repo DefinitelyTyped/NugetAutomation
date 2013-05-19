@@ -128,6 +128,11 @@ function Create-Package($packagesAdded, $newCommitHash) {
             return;
         } else {
 
+	    if($IsTeamCity) {
+		"##teamcity[testStarted name='$packageId']"
+	    }
+
+
             $mostRecentNuspec = (Get-MostRecentNugetSpec $packageId)
 
 			$currentVersion = Get-Last-NuGet-Version $mostRecentNuspec
@@ -164,6 +169,9 @@ function Create-Package($packagesAdded, $newCommitHash) {
 
             $packagesAdded.add($packageId);
 		}
+	    if($IsTeamCity) {
+		"##teamcity[testFinished name='$packageId']"
+	    }
     }
     END {
 	}
