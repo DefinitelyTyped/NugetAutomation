@@ -3,6 +3,7 @@ param(
     [switch]$CommitLocalGit,
     [switch]$PushGit,
     [switch]$PublishNuget,
+    [switch]$IsTeamCity,
     $specificPackages
     )
 
@@ -280,6 +281,11 @@ elseif($Error.Count -eq 0) {
     "****"
     $commitMessage
     "****"
+    
+    if($IsTeamCity) {
+    	git config user.name TeamCityBuild
+    	git config user.email jason@elegantcode.com
+    }
 
     if($CommitLocalGit) {
         git add Definitions
