@@ -156,6 +156,7 @@ function Create-Package($packagesAdded, $newCommitHash) {
 			$currSpecFile = "$packageFolder\$packageId.nuspec"
 			cp $nuspecTemplate $currSpecFile
 			$nuspec = [xml](cat $currSpecFile)
+			"Configuring Nuspec newVersion:$newVersion"
             Configure-NuSpec $nuspec $packageId $newVersion $pakageName $dependentPackages $newCommitHash
 			$nuspec.Save((get-item $currSpecFile))
 
