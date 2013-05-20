@@ -55,7 +55,12 @@ function Increment-Version($version){
         $parts[$i] = $x.ToString()
         break;
     }
-    [System.String]::Join(".", $parts)
+    $newVersion = [System.String]::Join(".", $parts)
+    if($newVersion) {
+        $newVersion
+    } else {
+        "0.0.1"
+    }
 }
 
 function Configure-NuSpec($spec, $packageId, $newVersion, $pakageName, $dependentPackages, $newCommitHash) {
