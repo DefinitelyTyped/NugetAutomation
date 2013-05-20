@@ -68,7 +68,7 @@ function Configure-NuSpec($spec, $packageId, $newVersion, $pakageName, $dependen
     $metadata = $spec.package.metadata
 
     $metadata.id = $packageId
-    $metadata.version = $newVersion
+    $metadata.version = [string]"$newVersion"
     $metadata.tags = "TypeScript JavaScript $pakageName"
     $metadata.description = "TypeScript Definitions (d.ts) for {0}. Generated based off the DefinitelyTyped repository [git commit: {1}]. http://github.com/DefinitelyTyped" -f $packageName, $newCommitHash
 
