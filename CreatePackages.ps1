@@ -107,7 +107,7 @@ function Resolve-Dependencies($packageFolder, $dependentPackages) {
         }
     }
 
-    (ls $packageFolder -Recurse -Include *.d.ts) | `
+    (ls $packageFolder -Recurse -Include *.d.ts -exclude legacy) | `
         cat | `
         where { $_ -match "//.*(reference\spath=('|`")../(?<package>.*)(/|\\)(.*)\.ts('|`"))" } | `
         %{ $matches.package } | `
@@ -127,7 +127,7 @@ function Create-Package($packagesAdded, $newCommitHash) {
 		$packageName = $dir.Name
 		$packageId = $packageIdFormat -f $packageName
 
-		$tsFiles = ls $dir -recurse -include *.d.ts
+		$tsFiles = ls $dir -recurse -include *.d.ts -exclude legacy
 
 		if(!($tsFiles)) {
             return;
