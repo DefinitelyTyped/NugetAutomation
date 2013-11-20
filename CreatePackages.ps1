@@ -127,7 +127,7 @@ function Create-Package($packagesAdded, $newCommitHash) {
 		$packageName = $dir.Name
 		$packageId = $packageIdFormat -f $packageName
 
-		$tsFiles = ls $dir -recurse -include *.d.ts -exclude | Where-Object {$_.FullName -notMatch "legacy"}
+		$tsFiles = ls $dir -recurse -include *.d.ts | Where-Object {$_.FullName -notMatch "legacy"}
 
 		if(!($tsFiles)) {
             return;
