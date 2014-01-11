@@ -148,7 +148,6 @@ function Create-Package($packagesAdded, $newCommitHash) {
 			Create-Directory $deployDir
             foreach($file in $tsFiles) {
                 $destFile = $deployDir + $file.FullName.Replace($dir, "")
-                echo $destFile
                 mkdir (Split-Path $destFile) -Force | Out-Null
                 cp $file $destFile
             }
