@@ -86,7 +86,7 @@ function Configure-NuSpec($spec, $packageId, $newVersion, $pakageName, $dependen
     }
 }
 
-function Resolve-Dependencies($packageFolder, $dependentPackages) {
+function Resolve-Dependencies($packageFolder, $dependentPackages, $packageName) {
 
     $packageFolder = get-item $packageFolder
 
@@ -94,8 +94,15 @@ function Resolve-Dependencies($packageFolder, $dependentPackages) {
 
     function Resolve-SubDependencies($dependencyName){
         if($dependentPackages.ContainsKey($dependencyName)){ 
+            # Try to guard against recursive dependencies
             return
         }
+
+        if($dependencyName -eq $packageName) {
+            # Don't include itself as a dependency
+            return;
+        }
+        echo "dependencyName: $dependencyName  packageName: $packageName"
 
         $dependentPackages.Add($dependencyName, $dependencyName);
 
@@ -103,7 +110,7 @@ function Resolve-Dependencies($packageFolder, $dependentPackages) {
         if(!(test-path $dependentFolder)){
             throw "no dependency [$dependencyName] found in [$dependentFolder]"
         } else {
-            Resolve-Dependencies $dependentFolder $dependentPackages
+            Resolve-Dependencies $dependentFolder $dependentPackages $packageName
         }
     }
 
@@ -154,7 +161,7 @@ function Create-Package($packagesAdded, $newCommitHash) {
 
 
             $dependentPackages = @{}
-            Resolve-Dependencies $dir $dependentPackages
+            Resolve-Dependencies $dir $dependentPackages $packageName
 			
 			# setup the nuspec file
 			$currSpecFile = "$packageFolder\$packageId.nuspec"
