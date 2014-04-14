@@ -254,15 +254,13 @@ if(($newCommitHash | measure).count -ne 1) {
 }
 
 "*** Projects to update ***"
-$projectsToUpdate
 "**************************"
-
-
-
 if($specificPackages) {
+    $specificPackages
     $allPackageDirectories = ls .\Definitions\* | ?{ $_.PSIsContainer } | ?{ $specificPackages -contains $_.Name }
 }
 else {
+    $projectsToUpdate
     $allPackageDirectories = ls .\Definitions\* | ?{ $_.PSIsContainer }
 }
 
