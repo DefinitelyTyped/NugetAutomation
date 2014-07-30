@@ -9,9 +9,45 @@ param(
 
 # https://github.com/borisyankov/DefinitelyTyped.git
 
+<# test code (used to test the semver implementation)
+
+    function testSemver($expected, $packageName, $fileName) {
+
+        $actual = isSemverFile $packageName $fileName 
+
+        if($actual -ne $expected) {
+            throw "Expected $file to return $expected - but got $actual"
+        }
+    }
+
+    testSemver $true "jquery" "jquery-1.2.0.d.ts"
+    testSemver $true "jquery" "jquery-1.2.0.d.ts"
+    testSemver $true "jquery" "jquery-1.2.0-beta.d.ts"
+    testSemver $false "jquery" "jquery.d.ts"
+    testSemver $false "jquery" "jquery-bar.d.ts"
+
+
+#>
+
 $nuget = (get-item ".\tools\NuGet.CommandLine.2.2.1\tools\NuGet.exe")
 $packageIdFormat = "{0}.TypeScript.DefinitelyTyped"
 $nuspecTemplate = get-item ".\PackageTemplate.nuspec"
+
+
+function isSemverFile($packageName, $fileName) {
+
+#write-host "*************"
+#write-host $fileName
+#write-host "$packageName-[0-9]+\.[0-9]\+(.*)\.d\.ts"
+#write-host "*************"
+
+    if( $fileName -match "$packageName-[0-9]+\.[0-9]+(.*)\.d\.ts") {
+        write-host "Excluding semver file $fileName..."
+        return $true
+    }
+    return $false
+
+}
 
 function Get-MostRecentNugetSpec($nugetPackageId) {
     $feeedUrl= "http://packages.nuget.org/v1/FeedService.svc/Packages()?`$filter=Id%20eq%20'$nugetPackageId'&`$orderby=Version%20desc&`$top=1"
@@ -134,7 +170,9 @@ function Create-Package($packagesAdded, $newCommitHash) {
 		$packageName = $dir.Name
 		$packageId = $packageIdFormat -f $packageName
 
-		$tsFiles = ls $dir -recurse -include *.d.ts | Where-Object {$_.FullName -notMatch "legacy"}
+		$tsFiles = ls $dir -recurse -include *.d.ts | `
+                    Where-Object {$_.FullName -notMatch "legacy"} | `
+                    Where-Object { !(isSemverFile $packageName $_.Name) }
 
 		if(!($tsFiles)) {
             return;
@@ -264,6 +302,7 @@ else {
     $allPackageDirectories = ls .\Definitions\* | ?{ $_.PSIsContainer }
 }
 
+
 # Clean the build directory
 if(test-path build) {
 	rm build -recurse -force -ErrorAction SilentlyContinue
@@ -275,7 +314,7 @@ pushd build
     $packagesUpdated = New-Object Collections.Generic.List[string]
 
     # Filter out already published packages if we already have a LAST_PUBLISHED_COMMIT
-    if($lastPublishedCommitReference -ne $null) {
+    if($lastPublishedCommitReference -ne $null -and !$specificPackages) {
         $packageDirectories = $allPackageDirectories | where { $projectsToUpdate -contains $_.Name }
     }
     else {
