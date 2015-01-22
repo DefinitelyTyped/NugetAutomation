@@ -107,7 +107,7 @@ function Resolve-Dependencies($packageFolder, $dependentPackages, $packageName) 
         $dependentPackages.Add($dependencyName, $dependencyName);
 
         $dependentFolder = get-item "$($packageFolder.Parent.FullName)\$dependencyName"
-        if(!(test-path $dependentFolder)){
+        if(!$dependentFolder -or !(test-path $dependentFolder)){
             throw "no dependency [$dependencyName] found in [$dependentFolder]"
         } else {
             Resolve-Dependencies $dependentFolder $dependentPackages $packageName
