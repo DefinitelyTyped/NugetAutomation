@@ -1,7 +1,11 @@
 NugetAutomation
 ==============================
 
-Get DefinitelyTyped TypeScript Definitions on [NuGet](http://nuget.org/packages?q=Definitelytyped)
+Publishes DefinitelyTyped TypeScript Definitions on [NuGet](http://nuget.org/packages?q=Definitelytyped)
+
+<a href="http://teamcity.codebetter.com/viewType.html?buildTypeId=bt957&guest=1">
+  <img src="http://teamcity.codebetter.com/app/rest/builds/buildType:(id:bt957)/statusIcon"/>
+</a>
 
 This project contains the automation used to generate NuGet packages for each of the TypeScript definitions in the DefinitelyTyped project.
 
@@ -45,4 +49,3 @@ To re-publish all packages:
 
 - First delete the `LAST_PUBLISHED_COMMIT` file
 - Then run the CreatePackages (as described above) with the necessary arguments.
-
