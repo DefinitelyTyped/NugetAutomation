@@ -190,7 +190,6 @@ function Create-Package($packagesAdded, $newCommitHash) {
             } catch {
               if($IsTeamCity) {
                   "##teamcity[message text='Error on package: $packageId' errorDetails='$_' status='ERROR']"
-                  "##teamcity[testFinished name='$packageId']"
               } else {
                 throw
               }
