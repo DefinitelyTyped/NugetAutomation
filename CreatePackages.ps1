@@ -144,49 +144,59 @@ function Create-Package($packagesAdded, $newCommitHash) {
               "##teamcity[testStarted name='$packageId']"
             }
 
-            $mostRecentNuspec = (Get-MostRecentNugetSpec $packageId)
+            try {
 
-            $currentVersion = Get-Last-NuGet-Version $mostRecentNuspec
-            $newVersion = Increment-Version $currentVersion
-            $packageFolder = "$packageId.$newVersion"
+                $mostRecentNuspec = (Get-MostRecentNugetSpec $packageId)
 
-            # Create the directory structure
-            $deployDir = "$packageFolder\Content\Scripts\typings\$packageName"
-            Create-Directory $deployDir
-            foreach($file in $tsFiles) {
-                $destFile = $deployDir + $file.FullName.Replace($dir, "")
-                mkdir (Split-Path $destFile) -Force | Out-Null
-                cp $file $destFile
-            }
+                $currentVersion = Get-Last-NuGet-Version $mostRecentNuspec
+                $newVersion = Increment-Version $currentVersion
+                $packageFolder = "$packageId.$newVersion"
 
-
-            $dependentPackages = @{}
-            Resolve-Dependencies $dir $dependentPackages $packageName
-
-            # setup the nuspec file
-            $currSpecFile = "$packageFolder\$packageId.nuspec"
-            cp $nuspecTemplate $currSpecFile
-            $nuspec = [xml](cat $currSpecFile)
-            "Configuring Nuspec newVersion:$newVersion"
-            Configure-NuSpec $nuspec $packageId $newVersion $pakageName $dependentPackages $newCommitHash
-            $nuspec.Save((get-item $currSpecFile))
-
-            & $nuget pack $currSpecFile
-
-            if($PublishNuget) {
-                if($nugetApiKey) {
-                    & $nuget push "$packageFolder.nupkg" -ApiKey $nugetApiKey -NonInteractive
-                } else {
-                    & $nuget push "$packageFolder.nupkg" -NonInteractive
+                # Create the directory structure
+                $deployDir = "$packageFolder\Content\Scripts\typings\$packageName"
+                Create-Directory $deployDir
+                foreach($file in $tsFiles) {
+                    $destFile = $deployDir + $file.FullName.Replace($dir, "")
+                    mkdir (Split-Path $destFile) -Force | Out-Null
+                    cp $file $destFile
                 }
-            } else {
-                "***** - NOT publishing to Nuget - *****"
+
+
+                $dependentPackages = @{}
+                Resolve-Dependencies $dir $dependentPackages $packageName
+
+                # setup the nuspec file
+                $currSpecFile = "$packageFolder\$packageId.nuspec"
+                cp $nuspecTemplate $currSpecFile
+                $nuspec = [xml](cat $currSpecFile)
+                "Configuring Nuspec newVersion:$newVersion"
+                Configure-NuSpec $nuspec $packageId $newVersion $pakageName $dependentPackages $newCommitHash
+                $nuspec.Save((get-item $currSpecFile))
+
+                & $nuget pack $currSpecFile
+
+                if($PublishNuget) {
+                    if($nugetApiKey) {
+                        & $nuget push "$packageFolder.nupkg" -ApiKey $nugetApiKey -NonInteractive
+                    } else {
+                        & $nuget push "$packageFolder.nupkg" -NonInteractive
+                    }
+                } else {
+                    "***** - NOT publishing to Nuget - *****"
+                }
+
+                $packagesAdded.add($packageId);
+            } catch {
+              if($IsTeamCity) {
+                  "##teamcity[message text='Error on package: $packageId' errorDetails='$_' status='ERROR']"
+                  "##teamcity[testFinished name='$packageId']"
+              }
+              throw
             }
 
-            $packagesAdded.add($packageId);
         }
         if($IsTeamCity) {
-        "##teamcity[testFinished name='$packageId']"
+            "##teamcity[testFinished name='$packageId']"
         }
     }
     END {
