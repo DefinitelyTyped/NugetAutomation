@@ -29,18 +29,18 @@ function Get-Last-NuGet-Version($spec) {
 }
 
 function Create-Directory($name){
-	if(!(test-path $name)){
-		mkdir $name | out-null
-		write-host "Created Dir: $name"
-	}
+    if(!(test-path $name)){
+        mkdir $name | out-null
+        write-host "Created Dir: $name"
+    }
 }
 
 
 function Increment-Version($version){
 
-	if(!$version) {
-		return "0.0.1";
-	}
+    if(!$version) {
+        return "0.0.1";
+    }
 
     $parts = $version.split('.')
     for($i = $parts.length-1; $i -ge 0; $i--){
@@ -90,10 +90,10 @@ function Resolve-Dependencies($packageFolder, $dependentPackages, $packageName) 
 
     $packageFolder = get-item $packageFolder
 
-    
+
 
     function Resolve-SubDependencies($dependencyName){
-        if($dependentPackages.ContainsKey($dependencyName)){ 
+        if($dependentPackages.ContainsKey($dependencyName)){
             # Try to guard against recursive dependencies
             return
         }
@@ -129,30 +129,30 @@ function Create-Package($packagesAdded, $newCommitHash) {
     BEGIN {
     }
     PROCESS {
-		$dir = $_
+        $dir = $_
 
-		$packageName = $dir.Name
-		$packageId = $packageIdFormat -f $packageName
+        $packageName = $dir.Name
+        $packageId = $packageIdFormat -f $packageName
 
-		$tsFiles = ls $dir -recurse -include *.d.ts | Where-Object {$_.FullName -notMatch "legacy"}
+        $tsFiles = ls $dir -recurse -include *.d.ts | Where-Object {$_.FullName -notMatch "legacy"}
 
-		if(!($tsFiles)) {
+        if(!($tsFiles)) {
             return;
         } else {
 
-	    if($IsTeamCity) {
-		"##teamcity[testStarted name='$packageId']"
-	    }
+            if($IsTeamCity) {
+              "##teamcity[testStarted name='$packageId']"
+            }
 
             $mostRecentNuspec = (Get-MostRecentNugetSpec $packageId)
 
-			$currentVersion = Get-Last-NuGet-Version $mostRecentNuspec
-			$newVersion = Increment-Version $currentVersion
-			$packageFolder = "$packageId.$newVersion"
-			
-			# Create the directory structure
-			$deployDir = "$packageFolder\Content\Scripts\typings\$packageName"
-			Create-Directory $deployDir
+            $currentVersion = Get-Last-NuGet-Version $mostRecentNuspec
+            $newVersion = Increment-Version $currentVersion
+            $packageFolder = "$packageId.$newVersion"
+
+            # Create the directory structure
+            $deployDir = "$packageFolder\Content\Scripts\typings\$packageName"
+            Create-Directory $deployDir
             foreach($file in $tsFiles) {
                 $destFile = $deployDir + $file.FullName.Replace($dir, "")
                 mkdir (Split-Path $destFile) -Force | Out-Null
@@ -162,16 +162,16 @@ function Create-Package($packagesAdded, $newCommitHash) {
 
             $dependentPackages = @{}
             Resolve-Dependencies $dir $dependentPackages $packageName
-			
-			# setup the nuspec file
-			$currSpecFile = "$packageFolder\$packageId.nuspec"
-			cp $nuspecTemplate $currSpecFile
-			$nuspec = [xml](cat $currSpecFile)
-			"Configuring Nuspec newVersion:$newVersion"
-            Configure-NuSpec $nuspec $packageId $newVersion $pakageName $dependentPackages $newCommitHash
-			$nuspec.Save((get-item $currSpecFile))
 
-			& $nuget pack $currSpecFile
+            # setup the nuspec file
+            $currSpecFile = "$packageFolder\$packageId.nuspec"
+            cp $nuspecTemplate $currSpecFile
+            $nuspec = [xml](cat $currSpecFile)
+            "Configuring Nuspec newVersion:$newVersion"
+            Configure-NuSpec $nuspec $packageId $newVersion $pakageName $dependentPackages $newCommitHash
+            $nuspec.Save((get-item $currSpecFile))
+
+            & $nuget pack $currSpecFile
 
             if($PublishNuget) {
                 if($nugetApiKey) {
@@ -184,13 +184,13 @@ function Create-Package($packagesAdded, $newCommitHash) {
             }
 
             $packagesAdded.add($packageId);
-		}
-	    if($IsTeamCity) {
-		"##teamcity[testFinished name='$packageId']"
-	    }
+        }
+        if($IsTeamCity) {
+        "##teamcity[testFinished name='$packageId']"
+        }
     }
     END {
-	}
+    }
 }
 
 function Update-Submodules {
@@ -266,7 +266,7 @@ else {
 
 # Clean the build directory
 if(test-path build) {
-	rm build -recurse -force -ErrorAction SilentlyContinue
+    rm build -recurse -force -ErrorAction SilentlyContinue
 }
 Create-Directory build
 
@@ -282,16 +282,16 @@ pushd build
         # first-time run. let's run all the packages.
         $packageDirectories = $allPackageDirectories
     }
-    
+
     if($IsTeamCity) {
-	"##teamcity[testSuiteStarted name='DefinitlyTyped NugetAutomation']"
+    "##teamcity[testSuiteStarted name='DefinitlyTyped NugetAutomation']"
     }
-    
+
 
     $packageDirectories | create-package $packagesUpdated $newCommitHash
 
     if($IsTeamCity) {
-	"##teamcity[testSuiteFinished name='DefinitlyTyped NugetAutomation']"
+    "##teamcity[testSuiteFinished name='DefinitlyTyped NugetAutomation']"
     }
 popd
 
@@ -313,10 +313,10 @@ elseif($Error.Count -eq 0) {
     "****"
     $commitMessage
     "****"
-    
+
     if($IsTeamCity) {
-    	git config user.name TeamCityBuild
-    	git config user.email jason@elegantcode.com
+        git config user.name TeamCityBuild
+        git config user.email jason@elegantcode.com
     }
 
     if($CommitLocalGit) {
