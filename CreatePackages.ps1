@@ -120,6 +120,7 @@ function Resolve-Dependencies($packageFolder, $dependentPackages, $packageName) 
         %{ $matches.package } | `
         ?{ $_ } | `
         ?{ $_ -ne $packageFolder } | `
+        %{ $_.TrimStart("../") } | `    # Not sure why, but the dx.devexpress package started creating an error that would return a package with '../jquery' from the above. (maybe a bad regex?). This is an ugly stop-gap for now.
         %{ Resolve-SubDependencies $_ }
 
 }
