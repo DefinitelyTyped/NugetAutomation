@@ -349,4 +349,5 @@ else {
     "*****"
     "ERROR During Process:"
     $Error
+    exit 1
 }

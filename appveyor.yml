@@ -5,6 +5,8 @@
 environment:
   access_token:
     secure: u4zKaMMRU0KX91lGpyWiheltwdMaUVa0h6Jxiq6X+At7g6TeueibUV0bTSDTzuBn
+  NUGET_API_KEY:
+    secure: 6KUWuJr+/7eJbvamQj/r95nlFOZBOyDF3XbL1xKtN+PTzhr7tHRpPWYZo1LgJ1/w
 
 branches:
   only:
