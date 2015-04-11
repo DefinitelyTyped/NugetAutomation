@@ -13,4 +13,4 @@ branches:
     - appveyor
 
 build_script:
-  - ps: .\CreatePackages.ps1 -nugetApiKey Env:\NUGET_API_KEY -CommitLocalGit -PushGit -PublishNuget
+  - ps: .\CreatePackages.ps1 -nugetApiKey $env:NUGET_API_KEY -CommitLocalGit -PushGit -PublishNuget
