@@ -326,7 +326,7 @@ elseif($Error.Count -eq 0) {
     "****"
 
     if($IsTeamCity) {
-        git config user.name TeamCityBuild
+        git config user.name AppVeyor
         git config user.email jason@elegantcode.com
     }
 
