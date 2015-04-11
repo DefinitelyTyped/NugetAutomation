@@ -2,6 +2,10 @@
 #      appveyor.com config        #
 #---------------------------------#
 
+environment:
+  access_token:
+    secure: u4zKaMMRU0KX91lGpyWiheltwdMaUVa0h6Jxiq6X+At7g6TeueibUV0bTSDTzuBn
+
 branches:
   only:
     - appveyor

@@ -337,6 +337,11 @@ elseif($Error.Count -eq 0) {
     }
 
     if($PushGit) {
+
+        # Store git credentials so we can push from AppVeyor
+        git config --global credential.helper store
+        Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
+
         git push origin master
     }
 }
