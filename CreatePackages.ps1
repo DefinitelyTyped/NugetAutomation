@@ -13,6 +13,12 @@ $nuget = (get-item ".\tools\NuGet.CommandLine.2.2.1\tools\NuGet.exe")
 $packageIdFormat = "{0}.TypeScript.DefinitelyTyped"
 $nuspecTemplate = get-item ".\PackageTemplate.nuspec"
 
+
+# Store git credentials so we can push from AppVeyor
+git config --global credential.helper store
+Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
+
+
 function Get-MostRecentNugetSpec($nugetPackageId) {
     $feeedUrl= "http://packages.nuget.org/v1/FeedService.svc/Packages()?`$filter=Id%20eq%20'$nugetPackageId'&`$orderby=Version%20desc&`$top=1"
     $webClient = new-object System.Net.WebClient
@@ -337,11 +343,6 @@ elseif($Error.Count -eq 0) {
     }
 
     if($PushGit) {
-
-        # Store git credentials so we can push from AppVeyor
-        git config --global credential.helper store
-        Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
-
         git push origin master
     }
 }
