@@ -10,7 +10,7 @@ environment:
 
 branches:
   only:
-    - appveyor
+    - master
 
 build_script:
   - ps: .\CreatePackages.ps1 -nugetApiKey $env:NUGET_API_KEY -CommitLocalGit -PushGit -PublishNuget
