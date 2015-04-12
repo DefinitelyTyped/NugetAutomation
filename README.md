@@ -11,13 +11,11 @@ This project contains the automation used to generate NuGet packages for each of
 
 It's not really intended to be used by anyone, however if you'd like to see how we automate this process, or have feedback on how it is working please open an issue or send a pull request!
 
-TeamCity
+AppVeyor
 ========
-Thanks to the great support by the CodeBetter community we've fully automated this process at the following link.
 
-[teamcity.codebetter NugetAutomation](http://teamcity.codebetter.com/viewType.html?buildTypeId=bt957)
+[![Build status](https://ci.appveyor.com/api/projects/status/3447utj0gc7oo1jk/branch/master?svg=true)](https://ci.appveyor.com/project/JasonJarrett/nugetautomation/branch/master)
 
-NOTE: the `tests` are actually each a `package` published to nuget. This allows us to easily see when a package was published vs a blank run of the script.
 
 Usages
 ======
