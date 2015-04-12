@@ -3,10 +3,6 @@ NugetAutomation
 
 Publishes DefinitelyTyped TypeScript Definitions on [NuGet](http://nuget.org/packages?q=Definitelytyped)
 
-<a href="http://teamcity.codebetter.com/viewType.html?buildTypeId=bt957&guest=1">
-  <img src="http://teamcity.codebetter.com/app/rest/builds/buildType:(id:bt957)/statusIcon"/>
-</a>
-
 This project contains the automation used to generate NuGet packages for each of the TypeScript definitions in the DefinitelyTyped project.
 
 It's not really intended to be used by anyone, however if you'd like to see how we automate this process, or have feedback on how it is working please open an issue or send a pull request!
