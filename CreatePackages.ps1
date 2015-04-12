@@ -340,7 +340,8 @@ elseif($Error.Count -eq 0) {
     }
 
     if($PushGit) {
-        git push -q origin master
+        git remote add github https://github.com/DefinitelyTyped/NugetAutomation.git
+        git push -q github master
         if ($LastExitCode -ne -) {
             exit 1
         }
