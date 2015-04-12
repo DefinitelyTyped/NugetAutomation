@@ -8,6 +8,8 @@ It's not really intended to be used by anyone, however if you'd like to see how 
 AppVeyor
 ========
 
+We have AppVeyor configured to run every 2 hours. Any and all changes to the DT project get published to NuGet.
+
 [![Build status](https://ci.appveyor.com/api/projects/status/3447utj0gc7oo1jk/branch/master?svg=true)](https://ci.appveyor.com/project/JasonJarrett/nugetautomation/branch/master)
 
 
