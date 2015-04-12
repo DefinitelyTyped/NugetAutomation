@@ -341,6 +341,9 @@ elseif($Error.Count -eq 0) {
 
     if($PushGit) {
         git push -q origin master
+        if ($LastExitCode -ne -) {
+            exit 1
+        }
     }
 }
 else {
