@@ -212,11 +212,11 @@ function Create-Package($packagesAdded, $newCommitHash) {
 
 function Update-Submodules {
 
-    git submodule update --init --recursive
+    git submodule update --init --recursive -q
 
     # make sure the submodule is here and up to date.
     pushd .\Definitions
-    git pull origin master
+    git pull origin master -q
     popd
 }
 
@@ -235,7 +235,7 @@ function Get-NewestCommitFromDefinetlyTyped($definetlyTypedFolder, $lastPublishe
 
     pushd $definetlyTypedFolder
 
-    git pull origin master | Out-Null
+    git pull -q origin master | Out-Null
 
         if($lastPublishedCommitReference) {
             # Figure out what project (folders) have changed since our last publish
@@ -343,7 +343,7 @@ elseif($Error.Count -eq 0) {
     }
 
     if($PushGit) {
-        git push origin master
+        git push -q origin master
     }
 }
 else {
