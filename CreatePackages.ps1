@@ -331,12 +331,9 @@ elseif($Error.Count -eq 0) {
     $commitMessage
     "****"
 
-    if($IsTeamCity) {
+    if($CommitLocalGit) {
         git config user.name AppVeyor
         git config user.email jason@elegantcode.com
-    }
-
-    if($CommitLocalGit) {
         git add Definitions
         git add LAST_PUBLISHED_COMMIT
         git commit -m $commitMessage
