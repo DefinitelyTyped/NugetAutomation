@@ -1,9 +1,7 @@
 NugetAutomation
 ==============================
 
-Publishes DefinitelyTyped TypeScript Definitions on [NuGet](http://nuget.org/packages?q=Definitelytyped)
-
-This project contains the automation used to generate NuGet packages for each of the TypeScript definitions in the DefinitelyTyped project.
+This project contains the automation used to generate [NuGet](http://www.nuget.org/profiles/DefinitelyTyped) packages for each of the TypeScript definitions in the [DefinitelyTyped](https://github.com/borisyankov/DefinitelyTyped)  project.
 
 It's not really intended to be used by anyone, however if you'd like to see how we automate this process, or have feedback on how it is working please open an issue or send a pull request!
 
