@@ -310,10 +310,20 @@ pushd build
     if($IsTeamCity) {
     "##teamcity[testSuiteStarted name='DefinitlyTyped NugetAutomation']"
     }
+    
+    "*****"
+    "`$packageDirectories - before filter"
+    $packageDirectories
+    "*****"
 
     # Some people for some reason claimed the NuGet id ending in this project's convention - arg
     # until we can work with NuGet team or package owner's to remove them we have to exclue them for now...
     $packageDirectories = $packageDirectories | where { $packageToIgnoreBecauseSomeoneStoleTheNugetIdBOOOO -notcontains $_ }
+
+    "*****"
+    "`$packageDirectories - after filter"
+    $packageDirectories
+    "*****"
 
     $packageDirectories | create-package $packagesUpdated $newCommitHash
 
