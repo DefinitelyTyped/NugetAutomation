@@ -16,9 +16,9 @@ $nuspecTemplate = get-item ".\PackageTemplate.nuspec"
 $packageToIgnoreBecauseSomeoneStoleTheNugetIdBOOOO = @(
     "Sjcl",     # https://www.nuget.org/packages/Sjcl.TypeScript.DefinitelyTyped/ 
     "Jsbn",     # https://www.nuget.org/packages/Jsbn.TypeScript.DefinitelyTyped/
-    "BigInt",   # https://www.nuget.org/packages/BigInt.TypeScript.DefinitelyTyped/
+    "bigint",   # https://www.nuget.org/packages/BigInt.TypeScript.DefinitelyTyped/
     "TGrid"     # https://www.nuget.org/packages/TGrid.TypeScript.DefinitelyTyped/
-    "React"     # https://www.nuget.org/packages/React.TypeScript.DefinitelyTyped/
+    "react"     # https://www.nuget.org/packages/React.TypeScript.DefinitelyTyped/
 )
 
 # Store git credentials so we can push from AppVeyor
@@ -318,7 +318,7 @@ pushd build
 
     # Some people for some reason claimed the NuGet id ending in this project's convention - arg
     # until we can work with NuGet team or package owner's to remove them we have to exclue them for now...
-    $packageDirectories = $packageDirectories | where { $packageToIgnoreBecauseSomeoneStoleTheNugetIdBOOOO -notcontains $_ }
+    $packageDirectories = $packageDirectories | where { $packageToIgnoreBecauseSomeoneStoleTheNugetIdBOOOO -notcontains $_.Name }
 
     "*****"
     "`$packageDirectories - after filter"
