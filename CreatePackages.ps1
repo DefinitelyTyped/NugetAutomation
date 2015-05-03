@@ -13,6 +13,13 @@ $nuget = (get-item ".\tools\NuGet.CommandLine.2.2.1\tools\NuGet.exe")
 $packageIdFormat = "{0}.TypeScript.DefinitelyTyped"
 $nuspecTemplate = get-item ".\PackageTemplate.nuspec"
 
+$packageToIgnoreBecauseSomeoneStoleTheNugetIdBOOOO = @(
+    "Sjcl",     # https://www.nuget.org/packages/Sjcl.TypeScript.DefinitelyTyped/ 
+    "Jsbn",     # https://www.nuget.org/packages/Jsbn.TypeScript.DefinitelyTyped/
+    "BigInt",   # https://www.nuget.org/packages/BigInt.TypeScript.DefinitelyTyped/
+    "TGrid"     # https://www.nuget.org/packages/TGrid.TypeScript.DefinitelyTyped/
+    "React"     # https://www.nuget.org/packages/React.TypeScript.DefinitelyTyped/
+)
 
 # Store git credentials so we can push from AppVeyor
 git config --global credential.helper store
@@ -304,6 +311,9 @@ pushd build
     "##teamcity[testSuiteStarted name='DefinitlyTyped NugetAutomation']"
     }
 
+    # Some people for some reason claimed the NuGet id ending in this project's convention - arg
+    # until we can work with NuGet team or package owner's to remove them we have to exclue them for now...
+    $packageDirectories = $packageDirectories | where { $packageToIgnoreBecauseSomeoneStoleTheNugetIdBOOOO -notcontains $_ }
 
     $packageDirectories | create-package $packagesUpdated $newCommitHash
 
