@@ -19,6 +19,7 @@ $packageToIgnoreBecauseSomeoneStoleTheNugetIdBOOOO = @(
     "bigint",   # https://www.nuget.org/packages/BigInt.TypeScript.DefinitelyTyped/
     "TGrid"     # https://www.nuget.org/packages/TGrid.TypeScript.DefinitelyTyped/
     "react"     # https://www.nuget.org/packages/React.TypeScript.DefinitelyTyped/
+    "jsurl"     # https://www.nuget.org/packages/jsurl.TypeScript.DefinitelyTyped/
 )
 
 # Store git credentials so we can push from AppVeyor
