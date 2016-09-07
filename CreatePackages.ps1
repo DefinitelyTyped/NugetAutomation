@@ -21,6 +21,7 @@ $packageToIgnoreBecauseSomeoneStoleTheNugetIdBOOOO = @(
     "react"     # https://www.nuget.org/packages/React.TypeScript.DefinitelyTyped/
     "jsurl"     # https://www.nuget.org/packages/jsurl.TypeScript.DefinitelyTyped/
     "samchon-framework" # Ignoring this because they use some typescript references in comments that I dont' want to spend time finding a way to ignore...
+    "backlog-js" # ignoring because it has some bad (not-existant) references
 )
 
 # Store git credentials so we can push from AppVeyor
