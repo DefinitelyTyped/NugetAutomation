@@ -1,6 +1,12 @@
 NugetAutomation
 ==============================
 
+# ********* UPDATE *********
+
+> This project is now officially pretty much over... Since the conversion to type defs 2.0 where all types are in [npm](https://npmjs.com) nuget packages are no longer being published or supported...
+
+
+
 This project contains the automation used to generate [NuGet](http://www.nuget.org/profiles/DefinitelyTyped) packages for each of the TypeScript definitions in the [DefinitelyTyped](https://github.com/borisyankov/DefinitelyTyped)  project.
 
 It's not really intended to be used by anyone, however if you'd like to see how we automate this process, or have feedback on how it is working please open an issue or send a pull request!
@@ -9,8 +15,6 @@ AppVeyor
 ========
 
 We have AppVeyor configured to run every 2 hours. Any and all changes to the DT project get published to NuGet.
-
-[![Build status](https://ci.appveyor.com/api/projects/status/3447utj0gc7oo1jk/branch/master?svg=true)](https://ci.appveyor.com/project/JasonJarrett/nugetautomation/branch/master)
 
 
 Usages
